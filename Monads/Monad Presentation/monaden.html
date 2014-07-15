@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<title>Monaden</title>
+
+<meta name="description" content="Monaden">    
+
+  <meta name="author" content="Carsten König" />
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="stylesheet" href="reveal.js/css/reveal.min.css">
+  <link rel="stylesheet" href="reveal.js/css/theme/beige.css" id="theme">
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+  if( window.location.search.match( /print-pdf/gi ) ) {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'reveal.js/css/print/pdf.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  } else {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'reveal.js/css/overrides.css';
+    link.id ="theme"
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  }
+</script>
+
+<!-- For syntax highlighting -->
+  <link rel="stylesheet" href="reveal.js/plugin/highlight/styles/railscasts.css">
+
+
+<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+<script>
+  document.write( '<link rel="stylesheet" href="reveal.js/css/print/' +
+    ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + 
+    '.css" type="text/css" media="print">' );
+</script>
+
+<!--[if lt IE 9]>
+<script src="reveal.js/lib/js/html5shiv.js"></script>
+<![endif]-->
+</head>
+
+<body class="print-pdf">
+
+<div class="reveal">
+
+<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+<h1>Monaden</h1>
+<h3>Carsten König</h3>
+<p>
+<h4><a href="https://carstenkoenig.github.io/DWX2014_Monaden">https://carstenkoenig.github.io/DWX2014_Monaden</a></h4>
+</p>
+</section>  
+
+
+<section><section id="monade-...-was-ist-das" class="titleslide slide level1"><h1>Monade ... was ist das?</h1></section><section id="section" class="slide level2">
+<h1></h1>
+<figure>
+<img src="images/whatstheproblem.jpg" />
+</figure>
+<div class="fragment">
+<p>... aber <em>wen</em> interessiert das?</p>
+</div>
+</section><section id="es-geht-um-syntax" class="slide level2">
+<h1>Es geht um: <em>Syntax</em></h1>
+<p>C#</p>
+<pre class="cs"><code>IEnumerable&lt;Outfit&gt; Outfits()
+{
+    return
+        from schuhe in Schuhe
+        from hose in Hosen
+        from hemd in Hemden
+        select new Outfit {Schuhe = schuhe, Hose = hose, Hemd = hemd};
+}</code></pre>
+<div class="fragment">
+<p><strong>Monade:</strong> <code>IEnumerable</code></p>
+</div>
+</section><section id="es-geht-um-dsls" class="slide level2">
+<h1>Es geht um: <em>DSL</em>s</h1>
+<p>F#</p>
+<pre class="fsharp"><code>let fetchAsync(url:string) : Async&lt;string&gt; =
+    async { 
+        try
+            let uri = new System.Uri(url)
+            let webClient = new WebClient()
+            return! webClient.AsyncDownloadString(uri)
+        with
+            | ex -&gt; printfn &quot;Fehler: %s&quot; ex.Message
+    }</code></pre>
+<div class="fragment">
+<p><strong>Monade:</strong> <code>Async</code></p>
+</div>
+</section><section id="es-geht-um-kapselung" class="slide level2">
+<h1>Es geht um: <em>Kapselung</em></h1>
+<p>Haskell</p>
+<pre class="haskell"><code>main :: IO ()
+main = putStrLn &quot;Hello, World!&quot;</code></pre>
+<div class="fragment">
+<p><strong>Monade:</strong> <code>IO</code></p>
+</div>
+</section></section>
+<section><section id="motivation" class="titleslide slide level1"><h1>Motivation</h1></section><section id="nullreferenceexception" class="slide level2">
+<h1>NullReferenceException</h1>
+<figure>
+<img src="images/MioDollarMistake.JPG" />
+</figure>
+</section><section id="section-1" class="slide level2">
+<h1></h1>
+<blockquote>
+<p>I call it my billion-dollar mistake.</p>
+</blockquote>
+<figure>
+<img src="images/Tony_Hoare.jpg" alt="Tony Hoare" /><figcaption><a href="https://en.wikipedia.org/wiki/Tony_Hoare">Tony Hoare</a></figcaption>
+</figure>
+</section><section id="guards" class="slide level2">
+<h1>Guards</h1>
+<pre class="cs"><code>var customer = GetCustomer(5);
+if (customer != null) 
+{
+  var orders = GetOrdersFor(customer);
+  if (orders != null) 
+  {
+    // ...
+  }
+}
+return null; // good idea isn&#39;t it?</code></pre>
+</section><section id="ein-muster..." class="slide level2">
+<h1>ein Muster...</h1>
+<pre class="cs"><code>var customer = GetCustomer(5);
+if (customer != null) 
+{
+  var orders = GetOrdersFor(customer);
+  if (orders != null) 
+  { /* ... */ } 
+  else 
+    return null;
+} 
+else 
+  return null; </code></pre>
+</section><section id="refactor" class="slide level2">
+<h1>refactor</h1>
+<pre class="cs"><code>public tR Guard&lt;tS, tR&gt;(tS source, Func&lt;tS, tR&gt; f)
+  where tS : class
+  where tR : class
+{
+  if (source != null) return f(source);
+  else return null;
+}</code></pre>
+<div class="fragment">
+<pre class="cs"><code>return Guard(GetCustomer(5), customer =&gt;
+  Guard(GetOrdersFor(customer), order =&gt; {
+    // ...
+  }));</code></pre>
+</div>
+</section><section id="syntactic-sugar" class="slide level2">
+<h1>syntactic sugar</h1>
+<pre class="cs"><code>public static tR Guard&lt;tS, tR&gt;(this tS source, Func&lt;tS, tR&gt; f)
+  where tS : class
+  where tR : class
+{
+  if (source != null) return f(source);
+  else return null;
+}</code></pre>
+<aside class="notes">
+Wenn der innere Block den Rückgabetyp nicht eindeutig bestimmt benötigt der Compiler Hilfe! Z.B. <code>return (object)null;</code> statt <code>return null;</code>
+</aside>
+<div class="fragment">
+<pre class="cs"><code>return GetCustomer(5).Guard(customer =&gt;
+  GetOrdersFor(customer).Guard(order =&gt; {
+    // ...
+  }));</code></pre>
+</div>
+</section><section id="können-wir-das-eleganter-lösen" class="slide level2">
+<h1>können wir das eleganter lösen?</h1>
+<div class="fragment">
+<p><strong>C#</strong> bekommt demnächst wahrscheinlich ein <em>monadic null checking</em></p>
+<pre class="cs"><code>GetCustomer(5)?.Orders()?. ...</code></pre>
+</div>
+</section></section>
+<section><section id="maybe" class="titleslide slide level1"><h1>Maybe</h1></section><section id="section-2" class="slide level2">
+<h1></h1>
+<figure>
+<img src="images/rant.jpg" />
+</figure>
+<pre class="cs"><code>Customer GetCustomer(int customerNumber)</code></pre>
+<p>Wenn eine Funktion <strong>partiell</strong> ist, dann sollte sie es auch <em>zugeben</em></p>
+</section><section id="section-3" class="slide level2">
+<h1></h1>
+<p><em>Sag es im Namen</em></p>
+<pre class="cs"><code>Customer TryGetCustomer(int customerNumber)</code></pre>
+<div class="fragment">
+<p><strong>aber:</strong> davon <em>merkt</em> der Compiler nichts</p>
+</div>
+</section><section id="section-4" class="slide level2">
+<h1></h1>
+<p><em>Try/Can Pattern</em></p>
+<pre class="cs"><code>bool TryGetCustomer(int customerNumber, out Customer customer)</code></pre>
+<div class="fragment">
+<p><strong>Aber:</strong> <em>imperatives</em> Handling</p>
+</div>
+</section><section id="typen---was-sonst" class="slide level2">
+<h1>Typen - was sonst?</h1>
+<pre class="cs"><code>Maybe&lt;Customer&gt; TryGetCustomer(int customerNumber)</code></pre>
+<pre class="fsharp"><code>type Maybe&lt;&#39;a&gt; =
+  | Just of &#39;a
+  | Nothing</code></pre>
+<p><em>Hinweis:</em> tatsächlich würde man F# <code>Option&lt;'a&gt;</code> verwenden</p>
+<p>für C# gibt es schöne Hilfsmittel in <a href="https://www.nuget.org/packages/FSharpx.Core/">FSharpx.Core</a></p>
+</section><section id="dont-look-so-different" class="slide level2">
+<h1>don't look so different</h1>
+<pre class="cs"><code>var customer = TryGetCustomer(5);
+if (customer.IsJust)
+{
+    var orders = TryGetOrdersFor(customer.Value);
+    if (orders.IsJust)
+    { /* ... berechne irgendwas vom Typ Rückgabe */ }
+    else
+        return Maybe.Nothing&lt;Rückgabe&gt;();
+}
+else
+    return Maybe.Nothing&lt;Rückgabe&gt;();</code></pre>
+</section><section id="refactor-again" class="slide level2">
+<h1>refactor (again)</h1>
+<pre class="cs"><code>return Bind(TryGetCustomer(5), customer =&gt;
+  Bind(TryGetOrdersFor(customer), order =&gt; {
+    // ...
+  }));</code></pre>
+</section><section id="bind" class="slide level2">
+<h1>Bind</h1>
+<pre class="cs"><code>Maybe&lt;tR&gt; Bind&lt;tS, tR&gt;(Maybe&lt;tS&gt; source, Func&lt;tS, Maybe&lt;tR&gt;&gt; f)</code></pre>
+<div class="fragment">
+<pre class="cs"><code>{
+  if (source.IsNothing) return Maybe.Nothing&lt;tR&gt;();</code></pre>
+</div>
+<div class="fragment">
+<pre class="cs"><code>  else return f(source.Value);
+}</code></pre>
+</div>
+</section><section id="sugar-...-more-sugar" class="slide level2">
+<h1>Sugar ... more Sugar</h1>
+<figure>
+<img src="images/mehrZucker.jpg" />
+</figure>
+</section><section id="c-linq" class="slide level2">
+<h1>C#: LINQ</h1>
+<pre class="cs"><code>return
+from customer in TryGetCustomer(5)
+from orders in TryGetOrdersFor(customer)
+select ...</code></pre>
+</section><section id="f-computation-expressions" class="slide level2">
+<h1>F#: Computation Expressions</h1>
+<pre class="fsharp"><code>maybe {
+    let! customer = tryGetCustomer 5
+    let! orders   = tryGetOrders customer
+    return ...
+}</code></pre>
+</section><section id="haskell-do-notation" class="slide level2">
+<h1>Haskell: Do-Notation</h1>
+<pre class="haskell"><code>beispiel :: Maybe Orders
+beispiel = do
+  customer &lt;- tryGetCustomer 5
+  orders   &lt;- tryGetOrdersFor customer
+  return orders</code></pre>
+</section><section id="was-müssen-wir-dafür-tun" class="slide level2">
+<h1>was müssen wir dafür tun?</h1>
+</section><section id="linq" class="slide level2">
+<h1>LINQ</h1>
+<p><code>SelectMany</code> implementieren:</p>
+<pre class="cs"><code>public static Maybe&lt;tR&gt; SelectMany&lt;tS, tR&gt;
+  (this Maybe&lt;tS&gt; source, Func&lt;tS, Maybe&lt;tR&gt;&gt; selector)
+{
+    return Bind(source, selector);
+}</code></pre>
+</section><section id="linq-1" class="slide level2">
+<h1>LINQ</h1>
+<p>nochmal <code>SelectMany</code>:</p>
+<pre class="cs"><code>public static Maybe&lt;tR&gt; SelectMany&lt;tS, tCol, tR&gt;
+  (this Maybe&lt;tS&gt; source, 
+   Func&lt;tS, Maybe&lt;tCol&gt;&gt; collectionSelector, 
+   Func&lt;tS, tCol, tR&gt; resultSelector)
+{
+    if (source.IsNothing) return Nothing&lt;tR&gt;();
+    var col = collectionSelector(source.Value);
+    if (col.IsNothing) return Nothing&lt;tR&gt;();
+    return resultSelector(source.Value, col.Value);
+}</code></pre>
+<p>im wesentlichen <code>Bind</code> + <code>Tranformation</code>/<code>Select</code></p>
+</section><section id="f" class="slide level2">
+<h1>F#</h1>
+<p><em>Builder</em> implementieren:</p>
+<pre class="fsharp"><code>type MaybeBuilder() =
+    member x.Bind(m, f)    = bind m f
+    member x.Return(v)     = Just v
+
+let maybe = MaybeBuilder()</code></pre>
+</section><section id="haskell" class="slide level2">
+<h1>Haskell</h1>
+<p><code>Monad</code> Typklasse instanzieren:</p>
+<pre class="haskell"><code>instance Monad Maybe where
+  return = Just
+  Nothing &gt;&gt;= _ = Nothing
+  Just a  &gt;&gt;= f = f a</code></pre>
+</section></section>
+<section><section id="list-monad" class="titleslide slide level1"><h1>List Monad</h1></section><section id="ziel" class="slide level2">
+<h1>Ziel</h1>
+<p>nicht-deterministische Ergebnise repräsentieren</p>
+<div class="fragment">
+<p><strong>oder einfach</strong></p>
+<p>arbeiten mit Funktionen, die <em>mehrere mögliche Ergebnisse</em> haben können</p>
+</div>
+</section><section id="was-ist-zu-tun" class="slide level2">
+<h1>was ist zu tun?</h1>
+<p>Listen <code>[a]</code> sollen zum Monaden werden</p>
+<div class="fragment">
+<p>Gesucht: Implementation von</p>
+<pre class="haskell"><code>(&gt;&gt;=) :: [a] -&gt; (a -&gt; [b]) -&gt; [b]</code></pre>
+<p>und</p>
+<pre class="haskell"><code>return :: a -&gt; [a]</code></pre>
+</div>
+</section><section id="return" class="slide level2">
+<h1>Return</h1>
+<pre class="haskell"><code>return :: a -&gt; [a]</code></pre>
+<p><strong>Intuition:</strong> einen Wert in eine Liste <strong>packen</strong></p>
+</section><section id="return-1" class="slide level2">
+<h1>Return</h1>
+<p>Haskell:</p>
+<pre class="haskell"><code>return :: a -&gt; [a]
+return x = [x]</code></pre>
+<p>F#:</p>
+<pre class="fsharp"><code>let return (x : &#39;a) : &#39;a list = [x]</code></pre>
+</section><section id="bind-1" class="slide level2">
+<h1>Bind</h1>
+<pre class="haskell"><code>(&gt;&gt;=) :: [a] -&gt; (a -&gt; [b]) -&gt; [b]</code></pre>
+<p><strong>Intuition:</strong></p>
+<ul>
+<li>jedes Element gibt wieder eine Liste</li>
+<li>zusammen also eine Liste von Listen</li>
+<li>diese gilt es <strong>plattzumachen</strong></li>
+</ul>
+</section><section id="bind-2" class="slide level2">
+<h1>Bind</h1>
+<p>Haskell:</p>
+<pre class="haskell"><code>(&gt;&gt;=) :: [a] -&gt; (a -&gt; [b]) -&gt; [b]
+xs (&gt;&gt;=) f = concatMap f xs</code></pre>
+<p>F#:</p>
+<pre class="fsharp"><code>let bind (xs : &#39;a list) (f : &#39;a -&gt; &#39;b list) : &#39;b list =
+  xs |&gt; List.collect f</code></pre>
+</section><section id="beispiel" class="slide level2">
+<h1>Beispiel</h1>
+<p><em>Permutation</em> einer Liste/Aufzählung</p>
+<p><strong>Rezept</strong>:</p>
+<ul>
+<li>Nimm ein Element <code>x</code> heraus</li>
+<li>Nimm eine Permuation <code>xs</code> der restlichen Elemente</li>
+<li><code>x:xs</code> ist eine Permutation</li>
+<li>Liste alle solchen Permuationen auf</li>
+</ul>
+</section><section id="f-1" class="slide level2">
+<h1>F#</h1>
+<pre class="fsharp"><code>let ohne x =
+    List.filter ((&lt;&gt;) x)
+
+let rec permutationen = function
+  | [] -&gt; [[]]
+  | xs -&gt; [ for x in xs do
+            let rest = xs |&gt; ohne x
+            for xs&#39; in permutationen rest do
+            yield (x::xs&#39;) ]</code></pre>
+</section><section id="haskell-1" class="slide level2">
+<h1>Haskell</h1>
+<pre class="haskell"><code>import Data.List (delete)
+
+perm :: (Eq a) =&gt; [a] -&gt; [[a]]
+perm [] = return []
+perm xs = do
+  x &lt;- xs
+  xs&#39; &lt;- perm $ delete x xs
+  return $ x:xs&#39;</code></pre>
+</section><section id="clinq" class="slide level2">
+<h1>C#/LINQ</h1>
+<pre class="cs"><code>IEnumerable&lt;IEnumerable&lt;T&gt;&gt; Permuationen&lt;T&gt;(IEnumerable&lt;T&gt; items)
+{
+    if (!items.Any()) return new[] {new T[] {}};
+
+    return
+        from h in items
+        from t in Permuationen(items.Where(x =&gt; !Equals(x, h)))
+        select h.Vor(t);
+}</code></pre>
+</section><section id="clinq-1" class="slide level2">
+<h1>C#/LINQ</h1>
+<p><strong>Hilfsfunktion</strong></p>
+<pre class="cs"><code>IEnumerable&lt;T&gt; Vor&lt;T&gt;(this T value, IEnumerable&lt;T&gt; rest)
+{
+    yield return value;
+    foreach (var v in rest)
+        yield return v;
+}</code></pre>
+<aside class="notes">
+<strong>Beachte:</strong> es gibt keine passende Einschränkung für a um hier <code>!=</code> zu verwenden, deshalb wird Equals verwendet
+</aside>
+</section></section>
+<section><section id="wahrscheinlichkeiten" class="titleslide slide level1"><h1>Wahrscheinlichkeiten</h1></section><section id="inspieriert-durch" class="slide level2">
+<h1>inspieriert durch</h1>
+<figure>
+<img src="images/funpearlProp.jpg" alt="Functional Pearls: Probabilistic Functional Programming in Haskell" /><figcaption><a href="http://web.engr.oregonstate.edu/~erwig/papers/PFP_JFP06.pdf">Functional Pearls: Probabilistic Functional Programming in Haskell</a></figcaption>
+</figure>
+</section><section id="risiko" class="slide level2">
+<h1>Risiko</h1>
+<pre class="fsharp"><code>let ``Verluste beim Risiko (3 gegen 2)`` =
+    vert {
+        let! offensive = nWürfel 3
+        let! defensive = nWürfel 2
+        let defensivVerluste = 
+            List.zip (offensive |&gt; List.sort |&gt; List.tail)
+                     (defensive |&gt; List.sort)
+            |&gt; List.sumBy (fun (o,d) -&gt; if d &gt;= o then 0 else 1)
+        return sprintf &quot;%d:%d&quot; (2-defensivVerluste) defensivVerluste
+    } |&gt; printVerteilung</code></pre>
+<div class="fragment">
+<pre class="fsharp"><code>&gt; 
+&quot;0:2&quot;: 37.17%
+&quot;1:1&quot;: 33.58%
+&quot;2:0&quot;: 29.26%</code></pre>
+</div>
+</section><section id="darstellung" class="slide level2">
+<h1>Darstellung</h1>
+<p>Eigentlich nur die <em>List</em>-Monade mit Wahrscheinlichkeiten</p>
+<pre class="fsharp"><code>type Wahrscheinlichkeit = double
+type Verteilung&lt;&#39;a&gt; = (&#39;a * Wahrscheinlichkeit) list</code></pre>
+</section><section id="return-2" class="slide level2">
+<h1>Return</h1>
+<p>Entspricht dem <strong>sicheren Ereignis</strong></p>
+<pre class="fsharp"><code>let sicher (a : &#39;a) : Verteilung&lt;&#39;a&gt; =
+    [a, 1.0]
+
+let returnM (a : &#39;a) : Verteilung&lt;&#39;a&gt; =
+  sicher a</code></pre>
+</section><section id="bind-3" class="slide level2">
+<h1>Bind</h1>
+<p>folge einem dynamisch erzeugten <a href="https://de.wikipedia.org/wiki/Baumdiagramm"><em>Baumdiagramm</em></a> und multipliziere die Wahrscheinlichkeiten.</p>
+</section><section id="beispiel-1" class="slide level2">
+<h1>Beispiel</h1>
+<pre class="fsharp"><code>let ``Mensch ärgere dich (nicht?)`` =
+    vert {
+        let! w1 = würfel
+        if w1 = 6 then return &quot;ich komm raus&quot; else
+        let! w2 = würfel
+        if w2 = 6 then return &quot;ich komm raus&quot; else
+        let! w3 = würfel
+        if w3 = 6 then return &quot;ich komm raus&quot; else
+        return &quot;grrr&quot;
+    }</code></pre>
+<div class="fragment">
+<pre class="fsharp"><code>val ( Mensch ärgere dich (nicht?) ) : Verteilung&lt;string&gt; =
+  [(&quot;grrrr&quot;, 0.5787037037); (&quot;ich komm raus&quot;, 0.4212962963)]</code></pre>
+</div>
+</section><section id="baumdiagramm" class="slide level2">
+<h1>Baumdiagramm</h1>
+<figure>
+<img src="images/WsSchritt1.svg" alt="erster Wurf" /><figcaption>erster Wurf</figcaption>
+</figure>
+</section><section id="baumdiagramm-1" class="slide level2">
+<h1>Baumdiagramm</h1>
+<figure>
+<img src="images/WsSchritt2.svg" alt="zweiter Wurf" /><figcaption>zweiter Wurf</figcaption>
+</figure>
+</section><section id="baumdiagramm-2" class="slide level2">
+<h1>Baumdiagramm</h1>
+<figure>
+<img src="images/WsSchritt3.svg" alt="Ergebnis" /><figcaption>Ergebnis</figcaption>
+</figure>
+</section><section id="bind-4" class="slide level2">
+<h1>Bind</h1>
+<pre class="fsharp"><code>let bind (v : Verteilung&lt;&#39;a&gt;) (f : &#39;a -&gt; Verteilung&lt;&#39;b&gt;) 
+         : Verteilung&lt;&#39;b&gt; =
+    [ for (a,p) in v do
+      for (b,p&#39;) in f a do
+      yield (b, p*p&#39;)
+    ] |&gt; normalize</code></pre>
+</section><section id="detail" class="slide level2">
+<h1>Detail</h1>
+<p><code>normalize</code> fasst nur die Ergebnise additiv zusammen</p>
+<pre class="fsharp"><code>let normalize (v : Verteilung&lt;&#39;a&gt;) =
+    let dict = new System.Collections.Generic.Dictionary&lt;_,_&gt;()
+    let get a = if dict.ContainsKey a then dict.[a] else 0.0
+    let add (a,p) = dict.[a] &lt;- get a + p
+    v |&gt; List.iter add
+    dict |&gt; Seq.map (fun kvp -&gt; (kvp.Key, kvp.Value)) 
+         |&gt; List.ofSeq</code></pre>
+</section></section>
+<section><section id="fscheck-generator" class="titleslide slide level1"><h1>FsCheck Generator</h1></section><section id="fscheck" class="slide level2">
+<h1>FsCheck?</h1>
+<ul>
+<li>Testet <strong>Eigenschaften</strong> von Funktionen/Programmen automatisch.</li>
+<li>Eigenschaft: <code>prop : 'input -&gt; bool</code></li>
+<li>FsCheck generiert zufällige Eingaben und testet ob die Eigenschaft jeweils <code>true</code> liefert.</li>
+</ul>
+<p><a href="https://fsharp.github.io/FsCheck/QuickStart.html">Doku/Info https://fsharp.github.io/FsCheck/QuickStart.html</a></p>
+</section><section id="beispiel-2" class="slide level2">
+<h1>Beispiel</h1>
+<pre class="fsharp"><code>let ``zweimal List.rev ist Identität``(xs : int list) =
+    List.rev (List.rev xs) = xs
+
+Check.Quick ``zweimal List.rev ist Identität``
+&gt; Ok, passed 100 tests.</code></pre>
+<pre class="fsharp"><code>let ``List.rev ist Identität``(xs : int list) =
+    List.rev xs = xs
+
+Check.Quick ``List.rev ist Identität``
+&gt; Falsifiable, after 3 tests (6 shrinks) (StdGen (1233601158,295877135)):
+&gt; [1; 0]</code></pre>
+</section><section id="generatoren" class="slide level2">
+<h1>Generatoren</h1>
+<p>Um die Testfälle zu generieren verwendet FsCheck <em>Generatoren</em></p>
+<pre class="fsharp"><code>type Würfel = internal W of int
+let würfel n = 
+    if n &lt; 1 || n &gt; 6 
+    then failwith &quot;ungültiger Wert&quot;
+    else W n
+
+let würfelGen =
+    gen {
+        let! n = Gen.choose (1,6)
+        return würfel n
+    }</code></pre>
+</section><section id="definition" class="slide level2">
+<h1>Definition</h1>
+<p><em>vereinfacht:</em> Generator ist eine Aktion, die einen zufälligen Wert liefert</p>
+<pre class="fsharp"><code>type Gen&lt;&#39;a&gt; = Gen of (unit -&gt; &#39;a)
+
+let sample (Gen g : Gen&lt;&#39;a&gt;) : &#39;a =
+    g()</code></pre>
+</section><section id="make-it-monadic" class="slide level2">
+<h1>make it monadic</h1>
+<p>Gesucht: Implementation von</p>
+<pre class="fsharp"><code>bind : Gen&lt;&#39;a&gt; -&gt; (&#39;a -&gt; Gen&lt;&#39;b&gt;) -&gt; Gen&lt;&#39;b&gt;</code></pre>
+<p>und</p>
+<pre class="fsharp"><code>return : &#39;a -&gt; Gen&lt;&#39;a&gt;</code></pre>
+</section><section id="return-3" class="slide level2">
+<h1>Return</h1>
+<pre class="fsharp"><code>return : &#39;a -&gt; Gen&lt;&#39;a&gt; = &#39;a -&gt; (unit -&gt; &#39;a)</code></pre>
+<p>Intuition: zufällige Wahl aus einem Element ...</p>
+<div class="fragment">
+<pre class="fsharp"><code>let returnM (a : &#39;a) : Gen&lt;&#39;a&gt; =
+    Gen &lt;| fun () -&gt; a</code></pre>
+</div>
+</section><section id="bind-5" class="slide level2">
+<h1>Bind</h1>
+<pre class="fsharp"><code>Gen&lt;&#39;a&gt; -&gt; (&#39;a -&gt; Gen&lt;&#39;b&gt;) -&gt; Gen&lt;&#39;b&gt; =
+(unit -&gt; &#39;a) -&gt; (&#39;a -&gt; (unit -&gt; &#39;b)) -&gt; (unit -&gt; &#39;b)</code></pre>
+<div class="fragment">
+<p>F#:</p>
+<pre class="fsharp"><code>let bind (m : Gen&lt;&#39;a&gt;) (f : &#39;a -&gt; Gen&lt;&#39;b&gt;) : Gen&lt;&#39;b&gt; =
+    Gen &lt;| fun () -&gt; sample (sample m |&gt; f)</code></pre>
+<aside class="notes">
+<strong>Beachte:</strong> eine Eta-Reduktion geht in die Hose, weil der Scheiß nicht rein genug ist
+</aside>
+</div>
+</section></section>
+<section><section id="async" class="titleslide slide level1"><h1>Async</h1></section><section id="msdn-example" class="slide level2">
+<h1>MSDN example</h1>
+<pre class="fsharp"><code>let fetchAsync(name, url:string) =
+    async { 
+        try
+            let uri = new System.Uri(url)
+            let webClient = new WebClient()
+            let! html = webClient.AsyncDownloadString(uri)
+            printfn &quot;Read %d characters for %s&quot; html.Length name
+        with
+            | ex -&gt; printfn &quot;%s&quot; (ex.Message);
+    }</code></pre>
+</section><section id="simplify" class="slide level2">
+<h1>simplify</h1>
+<p>verkettete Continuations/Callback</p>
+</section><section id="continuation" class="slide level2">
+<h1>Continuation</h1>
+<pre class="fsharp"><code>type Cont&lt;&#39;a&gt;  = &#39;a -&gt; unit </code></pre>
+<ul>
+<li>Nebeneffekt behaftete Aktion</li>
+<li>wird mit dem Ergebnis einer (asynchronen) Berechnung aufgerufen</li>
+</ul>
+</section><section id="continuation-monad" class="slide level2">
+<h1>Continuation monad</h1>
+<pre class="fsharp"><code>type ContM&lt;&#39;a&gt; = { run : Cont&lt;&#39;a&gt; -&gt; unit }
+
+let mkCont (f : Cont&lt;&#39;a&gt; -&gt; unit) : ContM&lt;&#39;a&gt; = 
+    { run = f }    </code></pre>
+<ul>
+<li>gib mir eine <code>'a</code> Continution <code>c</code></li>
+<li>ich berechne ein <code>'a</code> und rufe <code>c</code> damit auf</li>
+<li>kann verzögert/asychron erfolgen</li>
+</ul>
+</section><section id="beispiel-3" class="slide level2">
+<h1>Beispiel</h1>
+<pre class="fsharp"><code>let delay (span : TimeSpan) : ContM&lt;unit&gt; =
+fun f -&gt;
+    let timer = new Timer()
+    timer.Interval &lt;- int span.TotalMilliseconds
+    timer.Tick.Add (fun _ -&gt; timer.Dispose(); f())
+    timer.Start()
+|&gt; mkCont</code></pre>
+</section><section id="make-it-monadic-1" class="slide level2">
+<h1>make it monadic</h1>
+<pre class="fsharp"><code>let returnM : &#39;a -&gt; ContM&lt;&#39;a&gt; = ...
+
+let bind : ContM&lt;&#39;a&gt; -&gt; (&#39;a -&gt; ContM&lt;&#39;b&gt;) -&gt; ContM&lt;&#39;b&gt; =</code></pre>
+</section><section id="return-4" class="slide level2">
+<h1>Return</h1>
+<pre class="fsharp"><code>let returnM (a : &#39;a) : ContM&lt;&#39;a&gt; =
+    mkCont (fun f -&gt; f a)</code></pre>
+<p>rufe die übergebene Continuation sofort mit <code>a</code> auf</p>
+</section><section id="bind-6" class="slide level2">
+<h1>Bind</h1>
+<pre class="fsharp"><code>let bind : ContM&lt;&#39;a&gt; -&gt; (&#39;a -&gt; ContM&lt;&#39;b&gt;) -&gt; ContM&lt;&#39;b&gt; =</code></pre>
+<div class="fragment">
+<pre class="fsharp"><code>=  ((&#39;a -&gt; unit) -&gt; unit) 
+-&gt; (&#39;a -&gt; ((&#39;b -&gt; unit) -&gt; unit)) 
+-&gt; ((&#39;b -&gt; unit) -&gt; unit)</code></pre>
+</div>
+<div class="fragment">
+<figure>
+<img src="images/ToMuch.gif" />
+</figure>
+</div>
+</section><section id="let-the-types-guide-you-luke" class="slide level2">
+<h1>let the TYPES guide you luke</h1>
+<figure>
+<img src="images/luke.jpg" />
+</figure>
+</section><section id="bind-7" class="slide level2">
+<h1>Bind</h1>
+<pre class="fsharp"><code>let bind (f : &#39;a -&gt; ContM&lt;&#39;b&gt;) (m : ContM&lt;&#39;a&gt;) : ContM&lt;&#39;b&gt; =
+  fun (c : Cont&lt;&#39;b&gt;) -&gt;
+      m.run &lt;| fun a -&gt; (f a).run c
+  |&gt; mkCont</code></pre>
+<div class="fragment">
+<p>wenn eine Continuation <code>c</code> übergeben wird:</p>
+<ul>
+<li>berechne erst den Effekt von <code>m</code></li>
+<li>nutze dessen Ergebnis um mit <code>f</code> ein <code>Cont&lt;'b&gt;</code> zu bekommen</li>
+<li>berechne diese und gib das Ergebnis an <code>c</code> weiter</li>
+</ul>
+</div>
+</section><section id="example" class="slide level2">
+<h1>example</h1>
+<pre class="fsharp"><code>let runWith (f : &#39;a -&gt; &#39;b) (m : ContM&lt;&#39;a&gt;) = 
+    m.run (f &gt;&gt; ignore)
+
+let verzögertesHallo() =
+    cont {
+       do! delay &lt;| TimeSpan.FromSeconds 2.0
+       return &quot;Hello, World!&quot;
+    } |&gt; runWith MessageBox.Show</code></pre>
+</section></section>
+<section><section id="state" class="titleslide slide level1"><h1>State</h1></section><section id="motivation-1" class="slide level2">
+<h1>Motivation</h1>
+<p>Berechnungen mit Zustand:</p>
+<pre class="haskell"><code>f :: zustand -&gt; a -&gt; (b, zustand)
+g :: zustand -&gt; b -&gt; (c, zustand)</code></pre>
+<div class="fragment">
+<p><em>Komposition</em>:</p>
+<pre class="haskell"><code>let (b, z1) = f z0 a
+let (c, _)  = g z1 b
+c</code></pre>
+<p>unschön - geht das mit Monaden besser?</p>
+</div>
+</section><section id="to-much-freedom" class="slide level2">
+<h1>to much freedom</h1>
+<pre class="haskell"><code>f :: zustand -&gt; a -&gt; (b, zustand)</code></pre>
+<ul>
+<li><strong>Bisher:</strong> immer ein generischer Parameter im Monaden</li>
+<li><strong>jetzt:</strong> drei: <code>zustand</code>, <code>a</code> und <code>b</code></li>
+</ul>
+<div class="fragment">
+<p><code>zustand</code> <em>ändert</em> sich nicht - aber was ist mit den anderen?</p>
+</div>
+</section><section id="functional-trickster" class="slide level2">
+<h1>functional trickster</h1>
+<p>ein wenig umformen:</p>
+<pre class="haskell"><code>f :: a -&gt; (zustand -&gt; (b, zustand))</code></pre>
+<p>hier ist ein Monade versteckt</p>
+<div class="fragment">
+<p><em>Hint:</em> <code>putStrLn :: String -&gt; IO ()</code></p>
+</div>
+</section><section id="and-the-candiate-is" class="slide level2">
+<h1>and the candiate is</h1>
+<p>Haskell:</p>
+<pre class="haskell"><code>data State s a = MkState { runState :: s -&gt; (a, s) }</code></pre>
+<p>F#:</p>
+<pre class="fsharp"><code>type State&lt;&#39;s,&#39;a&gt; = { runState : &#39;s -&gt; (&#39;a*&#39;s) }
+let mkState f = { runState = f }</code></pre>
+</section><section id="make-it-monadic-2" class="slide level2">
+<h1>make it monadic</h1>
+<pre class="haskell"><code>return :: a -&gt; State s a
+(&gt;&gt;=)  :: State s a -&gt; (a -&gt; State s b) -&gt; State s b</code></pre>
+</section><section id="return-5" class="slide level2">
+<h1>Return</h1>
+<p>Haskell:</p>
+<pre class="haskell"><code>return :: a -&gt; State s a
+return a =  MkState $ \s -&gt; (a, s)</code></pre>
+<p>F#</p>
+<pre class="fsharp"><code>let return (a : &#39;a) : State&lt;&#39;s, &#39;a&gt; =
+  mkState &lt;| fun s -&gt; (a, s)</code></pre>
+<p>reiche den Zustand weiter und gib den Wert zurück</p>
+</section><section id="bind-8" class="slide level2">
+<h1>Bind</h1>
+<p>Haskell</p>
+<pre class="haskell"><code>(&gt;&gt;=)  :: State s a -&gt; (a -&gt; State s b) -&gt; State s b
+State f &gt;&gt;= g = 
+    MkState $ \s -&gt; let (a,s&#39;) = f s 
+                    in runState (g a) s&#39;</code></pre>
+<p>F#</p>
+<pre class="fsharp"><code>let bind (g : &#39;a -&gt; State&lt;&#39;s,&#39;b&gt;) (f : State&lt;&#39;s,&#39;a&gt;) : State&lt;&#39;s,&#39;b&gt; =
+    fun s -&gt;
+        let (a,s&#39;) = f.runState s
+        (g a).runState s&#39;
+    |&gt; mkState</code></pre>
+</section><section id="komposition" class="slide level2">
+<h1>Komposition</h1>
+<p>Problem war ja:</p>
+<pre class="haskell"><code>f :: a -&gt; (State s b)
+g :: b -&gt; (State s c)</code></pre>
+<p>gesucht Operator <code>op</code> mit</p>
+<pre class="haskell"><code>f `op` g :: a -&gt; (State s c)</code></pre>
+</section><section id="implementation" class="slide level2">
+<h1>Implementation</h1>
+<p>Haskell:</p>
+<pre class="haskell"><code>op :: (a -&gt; State s b) -&gt; (b -&gt; State s c) -&gt; (a -&gt; State s c)
+op f g = \a -&gt; f a &gt;&gt;= g</code></pre>
+<p>F#:</p>
+<pre class="fsharp"><code>let op f g =
+    fun a -&gt; bind (f a) g</code></pre>
+</section><section id="übrigens..." class="slide level2">
+<h1>Übrigens...</h1>
+<p>HLint:</p>
+<pre><code>Error: Use &gt;=&gt;
+Found:
+  \ a -&gt; f a &gt;&gt;= g
+Why not:
+  f Control.Monad.&gt;=&gt; g</code></pre>
+<p>das ist die <em>Kleisli</em> Komposition für Monaden ...</p>
+<div class="fragment">
+<p>die ist in Haskell für alle Monaden definiert:</p>
+<pre class="haskell"><code>(&gt;=&gt;) :: Monad m =&gt; (a -&gt; m b) -&gt; (b -&gt; m c) -&gt; (a -&gt; m c)
+f &gt;=&gt; g = \x -&gt; f x &gt;&gt;= g</code></pre>
+</div>
+<div class="fragment">
+<p>in .NET ist das so leider nicht möglich</p>
+</div>
+</section></section>
+<section><section id="gesetze" class="titleslide slide level1"><h1>§ Gesetze §</h1></section><section id="monade-sollte-erfüllen" class="slide level2">
+<h1>Monade sollte erfüllen:</h1>
+<ol type="1">
+<li><strong>Links-Identität</strong>: <code>return a &gt;&gt;= f === f a</code></li>
+<li><strong>Rechts-Identität</strong>: <code>m &gt;&gt;= return === m</code></li>
+<li><strong>Assoziativität</strong>: <code>(m &gt;&gt;= f) &gt;&gt;= g === m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)</code></li>
+</ol>
+</section><section id="warum" class="slide level2">
+<h1>Warum?</h1>
+<p>rein <em>mathematisch</em> sind diese Gesetze unbedingt nötig um sich Monade zu nennen.</p>
+<p>siehe etwa: <a href="http://yogsototh.github.io/Category-Theory-Presentation/">Category Theory &amp; Programming</a></p>
+<div class="fragment">
+<p><em>praktisch</em> normale Programmiererintuition</p>
+</div>
+</section><section id="rechts-identität" class="slide level2">
+<h1>Rechts-Identität</h1>
+<pre class="haskell"><code>m &gt;&gt;= return === m</code></pre>
+<div class="fragment">
+<p>als Liste</p>
+<pre class="haskell"><code>[ y | x &lt;- xs; y &lt;- [x] ] === xs</code></pre>
+</div>
+<div class="fragment">
+<p>LINQ / C#</p>
+<pre class="cs"><code>return
+   from x in xs
+   from y in new[]{x}
+   select y;</code></pre>
+<p>sollte natürlich das Gleiche wie einfach</p>
+<pre class="cs"><code>return xs;</code></pre>
+<p>sein.</p>
+</div>
+</section><section id="links-identität" class="slide level2">
+<h1>Links-Identität</h1>
+<pre class="haskell"><code>return a &gt;&gt;= f === f a</code></pre>
+<div class="fragment">
+<p>LINQ / C#</p>
+<pre class="cs"><code>return
+   from x in new []{a}
+   from y in f x
+   select y;</code></pre>
+<p>sollte natürlich das Gleiche wie einfach</p>
+<pre class="cs"><code>return f(a);</code></pre>
+<p>sein.</p>
+</div>
+</section><section id="assoziativität-linke-seite" class="slide level2">
+<h1>Assoziativität (linke Seite)</h1>
+<pre class="haskell"><code>(m &gt;&gt;= f) &gt;&gt;= g === m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)</code></pre>
+<p>LINQ / C#</p>
+<pre class="cs"><code>var zw1 =   
+   from x in xs
+   from y in f(x)
+   select y;
+return
+   from y in zw1
+   from z in g(y)
+   select y;</code></pre>
+</section><section id="assoziativität-rechte-seite" class="slide level2">
+<h1>Assoziativität (rechte Seite)</h1>
+<pre class="haskell"><code>(m &gt;&gt;= f) &gt;&gt;= g === m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)</code></pre>
+<p>LINQ / C#</p>
+<pre class="cs"><code>Func&lt;X,IEnumerable&lt;Z&gt;&gt; zw1 =
+  x =&gt; from y in f(x)
+       from z in g(y)
+       return z;
+return
+  from x in xs
+  from z in zw1(x)
+  select z;  </code></pre>
+</section><section id="assoziativität" class="slide level2">
+<h1>Assoziativität</h1>
+<p>oder einfach</p>
+<p>LINQ / C#</p>
+<pre class="cs"><code>return
+  from x in xs
+  from y in f(x)
+  from z in g(y)
+  select z;  </code></pre>
+</section><section id="assoziativität-kleisli" class="slide level2">
+<h1>Assoziativität Kleisli</h1>
+<p>und mit <em>Kleisli</em></p>
+<pre class="haskell"><code>(f &gt;=&gt; g) &gt;=&gt; h === f &gt;=&gt; (g &gt;=&gt; h)</code></pre>
+<p>sieht es sogar wie <strong>Assoziativität</strong> aus!</p>
+<aside class="notes">
+<strong>Hänge</strong> ?print-pdf#/ an die URL im Browser an um eine PDF zu erzeugen
+</aside>
+</section></section>
+</div>
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.min.js"></script>
+
+<script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    width: 1280,
+    height: 1024,
+
+  // available themes are in /css/theme
+      theme: Reveal.getQueryHash().theme || 'beige', 
+  
+  // default/cube/page/concave/zoom/linear/fade/none
+      transition: Reveal.getQueryHash().transition || 'concave', 
+  
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+    { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+    { src: 'reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+    { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+    { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+.reveal p {
+  font-size: 130%;
+}
+
+.hljs {
+  font-size: 140% !important;
+}

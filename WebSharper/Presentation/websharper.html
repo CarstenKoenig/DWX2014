@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<title>F# im Web</title>
+
+<meta name="description" content="F# im Web">    
+
+  <meta name="author" content="Carsten König" />
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="stylesheet" href="reveal.js/css/reveal.min.css">
+  <link rel="stylesheet" href="reveal.js/css/theme/beige.css" id="theme">
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+  if( window.location.search.match( /print-pdf/gi ) ) {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'reveal.js/css/print/pdf.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  } else {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'reveal.js/css/overrides.css';
+    link.id ="theme"
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  }
+</script>
+
+<!-- For syntax highlighting -->
+  <link rel="stylesheet" href="reveal.js/plugin/highlight/styles/solarized_dark.css">
+
+
+<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+<script>
+  document.write( '<link rel="stylesheet" href="reveal.js/css/print/' +
+    ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + 
+    '.css" type="text/css" media="print">' );
+</script>
+
+<!--[if lt IE 9]>
+<script src="reveal.js/lib/js/html5shiv.js"></script>
+<![endif]-->
+</head>
+
+<body class="print-pdf">
+
+<div class="reveal">
+
+<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+<h1>F# im Web</h1>
+<h3>Carsten König</h3>
+<p>
+<h4>DWX 2014</h4>
+</p>
+</section>  
+
+
+<section><section id="f-für-das-web-mit-websharper" class="titleslide slide level1"><h1>F# für das Web mit WebSharper</h1></section><section id="demo" class="slide level2">
+<h1>Demo</h1>
+<p>URL shortener</p>
+<figure>
+<img src="images/Home.jpg" alt="App in Action" /><figcaption>App in Action</figcaption>
+</figure>
+</section><section id="websharper" class="slide level2">
+<h1>WebSharper</h1>
+<ul>
+<li>Webapplikationen komplett in F#</li>
+<li>ASP.NET / Web.API Integration</li>
+<li>VisualStudio, teilweise Xamarin/MonoDevelop</li>
+<li>F# -&gt; Javascript Compiler</li>
+<li>einfachste Client/Server Kommunikation</li>
+<li>HTML Templating</li>
+<li>Sitelets/Pagelets/...</li>
+</ul>
+</section><section id="sitelets" class="slide level2">
+<h1>Sitelets</h1>
+<p>klassische Server-Part, ähnlich ASP.MVC</p>
+<p>Typsichere Links, Routen und Content parametrisiert über einen <em>Aktions</em>datentyp.</p>
+</section><section id="html-templates" class="slide level2">
+<h1>HTML Templates</h1>
+<p>HTML Templating ähnlich zu ASP.NET ASPX- bwz. Razor-Viewengine</p>
+</section><section id="pagelets" class="slide level2">
+<h1>Pagelets</h1>
+<p><em>Widgets</em>/Controls für den Client, Aufbau einer HTML/JavaScript Seite mit einer F# - DSL</p>
+</section></section>
+<section><section id="sitelets-1" class="titleslide slide level1"><h1>Sitelets</h1></section><section id="aktionstyp" class="slide level2">
+<h1>Aktionstyp</h1>
+<p>Entspricht den Seiten/Aktionen:</p>
+<pre class="fsharp"><code>type Aktion =
+    | Home
+    | Goto of SharpShortener.Id 
+    | Stats</code></pre>
+</section><section id="router" class="slide level2">
+<h1>Router</h1>
+<p>Bildet <em>Aktionen</em> auf URLs und URLs auf <em>Aktionen</em> ab.</p>
+<pre class="fsharp"><code>let router : Router&lt;Aktion&gt; =
+    [
+        [
+            Aktion.Home, &quot;/&quot;
+            Aktion.Stats, &quot;/Stats&quot;
+        ] |&gt; Router.Table
+        Router.New
+            (fun request -&gt; ... )
+            (fun aktion -&gt; ... )
+    ] |&gt; Router.Sum</code></pre>
+</section><section id="controller" class="slide level2">
+<h1>Controller</h1>
+<p>Ordnet <em>Aktionen</em> <strong>Content</strong> zu.</p>
+<pre class="fsharp"><code>let controller : Controller&lt;Aktion&gt; =
+    {
+        Handle = function
+            | Aktion.Home    -&gt; homeContent
+            | Aktion.Goto id -&gt; gotoContent id
+            | Aktion.Stats   -&gt; statsContent
+    }</code></pre>
+</section><section id="content" class="slide level2">
+<h1>Content</h1>
+<p>Erzeugt aus einem <code>Context</code> (Request, Resourcen, ...) eine HTML Antwort.</p>
+<pre class="fsharp"><code>let homeContent =
+    Skin.WithTemplate &quot;#-Shortener&quot; &lt;| fun ctx -&gt;
+        [
+            Div [new Controls.Shorten()]
+            A [HRef (ctx.Link Aktion.Stats)] -&lt; [Text &quot;Statistiken&quot;]
+        ]</code></pre>
+</section></section>
+<section><section id="html-templates-1" class="titleslide slide level1"><h1>HTML Templates</h1></section><section id="template" class="slide level2">
+<h1>Template</h1>
+<pre class="html"><code>&lt;!DOCTYPE html&gt;
+&lt;head&gt;
+    &lt;title&gt;${title}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class=&quot;templateContent&quot;&gt;
+        &lt;div data-replace=&quot;body&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;</code></pre>
+</section><section id="holes" class="slide level2">
+<h1>Holes</h1>
+<ul>
+<li><code>${Name}</code>: Platzhalter der mit Text ersetzt wird</li>
+<li><code>data-replace=&quot;Name&quot;</code>: Platzhalter-Element das komplett ersetzt wird</li>
+<li><code>data-hole=&quot;Namd&quot;</code>: Platzhalter-Element, wird mit Kindelementen gefüllt.</li>
+</ul>
+</section><section id="skin" class="slide level2">
+<h1>Skin</h1>
+<p>Verarbeitet ein Template und wandelt es in Content um.</p>
+<pre class="fsharp"><code>    type Page =
+        {
+            Title : string
+            Body : list&lt;Content.HtmlElement&gt;
+        }
+
+    let MainTemplate =
+        Content.Template&lt;Page&gt;(&quot;~/Main.html&quot;)
+            .With(&quot;title&quot;, fun x -&gt; x.Title)
+            .With(&quot;body&quot;, fun x -&gt; x.Body)</code></pre>
+</section><section id="hilfsfunktionen" class="slide level2">
+<h1>Hilfsfunktionen</h1>
+<pre class="fsharp"><code>let WithTemplate title body : Content&lt;Aktion&gt; =
+    Content.WithTemplate MainTemplate &lt;| fun context -&gt;
+        {
+            Title = title
+            Body = body context
+        }</code></pre>
+<p>damit</p>
+<pre class="fsharp"><code>let homeContent =
+    Skin.WithTemplate &quot;#-Shortener&quot; &lt;| fun ctx -&gt;
+        [
+            Div [new Controls.Shorten()]
+            A [HRef (ctx.Link Aktion.Stats)] -&lt; [Text &quot;Statistiken&quot;]
+        ]</code></pre>
+</section></section>
+<section><section id="pagelets-1" class="titleslide slide level1"><h1>Pagelets</h1></section><section id="funktionsweise" class="slide level2">
+<h1>Funktionsweise</h1>
+<p>Werden auf dem Server erstellt, an den Client übertragen und dort gerendert bzw. in die Seite eingefügt.</p>
+<p>Ein wenig wie die Views in MVC.</p>
+</section><section id="html-kombinatoren" class="slide level2">
+<h1>HTML Kombinatoren</h1>
+<p>Für die meisten HTML Elemente gibt es entsprechende F# Funktionen/Kombinatoren.</p>
+<pre class="fsharp"><code>Div [Width &quot;200px&quot;] -&lt; [
+    H1 [Text &quot;Hallo DWX&quot;]
+]</code></pre>
+</section><section id="html-events" class="slide level2">
+<h1>HTML Events</h1>
+<p>Einige Ereignisse werden direkt von den Kombinatoren unterstützt und können mit</p>
+<pre class="fsharp"><code>let ( |&gt;! ) x f = f x; x</code></pre>
+<p>einfach angehängt werden</p>
+<pre class="fsharp"><code>Div [
+    Input [Attr.Type &quot;button&quot;; Attr.Value &quot;drück mal!&quot;]
+    |&gt;! OnClick (fun element eventArguments -&gt;
+        element.Value &lt;- &quot;;)&quot;)
+]</code></pre>
+</section><section id="html-events-1" class="slide level2">
+<h1>HTML Events</h1>
+<p><em>low-level</em> Handler</p>
+<p>Können über die <code>Dom</code>-Eigenschaft angehängt werden:</p>
+<pre class="fsharp"><code>btn.Dom.AddEventListener(
+    &quot;click&quot;, 
+    (fun () -&gt; JavaScript.Alert(&quot;Click&quot;)), false)</code></pre>
+<p>normalerweise sollte auf <code>OnAfterRender</code> gewartet werden:</p>
+<pre class="fsharp"><code>let btn = 
+    Button [Text &quot;Test&quot;]
+    |&gt;! OnAfterRender (fun el -&gt;
+        el.Dom.AddEventListener(
+            &quot;click&quot;, 
+            (fun () -&gt; JavaScript.Alert(&quot;Click&quot;)),
+            false))</code></pre>
+</section></section>
+</div>
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.min.js"></script>
+
+<script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    width: 1280,
+    height: 1024,
+
+  // available themes are in /css/theme
+      theme: Reveal.getQueryHash().theme || 'beige', 
+  
+  // default/cube/page/concave/zoom/linear/fade/none
+      transition: Reveal.getQueryHash().transition || 'concave', 
+  
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+    { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+    { src: 'reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+    { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+    { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+  });
+
+</script>
+
+</body>
+</html>
