@@ -31,3 +31,6 @@ C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\bin\De
 C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\obj\Debug\SharpShortener.Tests.fsprojResolveAssemblyReference.cache
 C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\obj\Debug\SharpShortener.Tests.dll
 C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\obj\Debug\SharpShortener.Tests.pdb
+C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\bin\Debug\IntelliFactory.WebSharper.Formlet.dll
+C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\bin\Debug\IntelliFactory.Formlet.dll
+C:\Dokumente\Talks\DWX2014\WebSharper\SharpShortener\SharpShortener.Tests\bin\Debug\IntelliFactory.Reactive.dll
