@@ -1,0 +1,7 @@
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\bin\Debug\Monaden.BeispieleCSharp.exe
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\bin\Debug\Monaden.BeispieleCSharp.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\obj\Debug\Monaden.BeispieleCSharp.csprojResolveAssemblyReference.cache
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\obj\Debug\Monaden.BeispieleCSharp.exe
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\obj\Debug\Monaden.BeispieleCSharp.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\bin\Debug\Monaden.CSharp.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.BeispieleCSharp\bin\Debug\Monaden.CSharp.pdb

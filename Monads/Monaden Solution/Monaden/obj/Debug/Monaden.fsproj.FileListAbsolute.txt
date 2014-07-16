@@ -1,0 +1,17 @@
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\Monaden.XML
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\Monaden.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\Monaden.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\FsCheck.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\FSharp.Core.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Core.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Interfaces.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Linq.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.PlatformServices.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\FsCheck.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\FSharp.Core.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Core.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Interfaces.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.Linq.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\bin\Debug\System.Reactive.PlatformServices.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\obj\Debug\Monaden.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden\obj\Debug\Monaden.pdb

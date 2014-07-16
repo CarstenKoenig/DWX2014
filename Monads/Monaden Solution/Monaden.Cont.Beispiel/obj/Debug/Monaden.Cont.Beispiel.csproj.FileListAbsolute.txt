@@ -1,0 +1,15 @@
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\Monaden.Cont.Beispiel.exe
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\Monaden.Cont.Beispiel.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\Monaden.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\System.Reactive.Core.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\System.Reactive.Interfaces.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\Monaden.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\Monaden.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\System.Reactive.Core.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\bin\Debug\System.Reactive.Interfaces.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.csprojResolveAssemblyReference.cache
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.Main.resources
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.Properties.Resources.resources
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.csproj.GenerateResource.Cache
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.exe
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Cont.Beispiel\obj\Debug\Monaden.Cont.Beispiel.pdb

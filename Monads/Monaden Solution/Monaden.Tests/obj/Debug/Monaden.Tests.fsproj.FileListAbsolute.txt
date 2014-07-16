@@ -1,0 +1,14 @@
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\Monaden.Tests.dll.config
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\Monaden.Tests.XML
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\Monaden.Tests.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\Monaden.Tests.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FsCheck.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FsCheck.Xunit.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FSharp.Core.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\xunit.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FsCheck.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FsCheck.Xunit.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\FSharp.Core.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\bin\Debug\xunit.xml
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\obj\Debug\Monaden.Tests.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.Tests\obj\Debug\Monaden.Tests.pdb

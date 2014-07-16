@@ -1,0 +1,5 @@
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.CSharp\bin\Debug\Monaden.CSharp.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.CSharp\bin\Debug\Monaden.CSharp.pdb
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.CSharp\obj\Debug\Monaden.CSharp.csprojResolveAssemblyReference.cache
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.CSharp\obj\Debug\Monaden.CSharp.dll
+C:\Dokumente\Talks\DWX2014\Monads\Monaden Solution\Monaden.CSharp\obj\Debug\Monaden.CSharp.pdb
